@@ -23,7 +23,7 @@ class DoctorHome extends StatelessWidget {
       ),
 
       body: const Center(
-        child: Text("Welcome Doctor 👨‍⚕️", style: TextStyle(fontSize: 22)),
+        child: Text("Welcome Doctor 👨‍⚕️", style: TextStyle(fontSize: 24)),
       ),
     );
   }
