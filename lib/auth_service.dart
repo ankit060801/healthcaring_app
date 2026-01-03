@@ -1,15 +1,19 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
-import 'google_auth.dart';
+final GoogleSignIn googleSignIn = GoogleSignIn();
 
-Future<void> logout(BuildContext context) async {
+Future<void> logout() async {
   try {
-    await googleSignIn.disconnect(); // force email chooser
+    // Try aggressive logout (may fail)
+    await googleSignIn.disconnect();
+  } catch (_) {
+    // Ignore error safely
+  } finally {
+    // Always sign out from Google
+    await googleSignIn.signOut();
+
+    // Always sign out from Firebase
     await FirebaseAuth.instance.signOut();
-  } catch (e) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("Logout failed: $e")));
   }
 }

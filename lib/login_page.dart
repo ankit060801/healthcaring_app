@@ -11,8 +11,13 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool loading = false;
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
+  bool loading = false;
+  bool isLogin = true; // login or register
+
+  // ---------------- GOOGLE LOGIN ----------------
   Future<void> signInWithGoogle() async {
     try {
       setState(() => loading = true);
@@ -34,42 +39,131 @@ class _LoginPageState extends State<LoginPage> {
         credential,
       );
 
-      final user = userCred.user!;
-      final ref = FirebaseFirestore.instance.collection('users').doc(user.uid);
-
-      final doc = await ref.get();
-
-      // ✅ ONLY create user if document does NOT exist
-      if (!doc.exists) {
-        await ref.set({
-          'uid': user.uid,
-          'name': user.displayName ?? '',
-          'email': user.email ?? '',
-          'photo': user.photoURL ?? '',
-          'role': '',
-          'approved': false, // only first time
-        });
-      }
+      await _createUserIfNotExists(userCred.user!);
 
       setState(() => loading = false);
     } catch (e) {
       setState(() => loading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      _showError(e.toString());
     }
   }
 
+  // ---------------- EMAIL LOGIN / REGISTER ----------------
+  Future<void> emailAuth() async {
+    try {
+      setState(() => loading = true);
+
+      UserCredential userCred;
+
+      if (isLogin) {
+        userCred = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+      } else {
+        userCred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+      }
+
+      await _createUserIfNotExists(userCred.user!);
+
+      setState(() => loading = false);
+    } catch (e) {
+      setState(() => loading = false);
+      _showError(e.toString());
+    }
+  }
+
+  // ---------------- CREATE FIRESTORE USER ----------------
+  Future<void> _createUserIfNotExists(User user) async {
+    final ref = FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final doc = await ref.get();
+
+    if (!doc.exists) {
+      await ref.set({
+        'uid': user.uid,
+        'email': user.email,
+        'name': user.displayName ?? '',
+        'role': '',
+        'approved': false,
+        'provider': user.providerData.first.providerId,
+      });
+    }
+  }
+
+  // ---------------- FORGOT PASSWORD ----------------
+  Future<void> forgotPassword() async {
+    if (emailController.text.isEmpty) {
+      _showError("Enter email first");
+      return;
+    }
+
+    await FirebaseAuth.instance.sendPasswordResetEmail(
+      email: emailController.text.trim(),
+    );
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Password reset email sent")));
+  }
+
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  // ---------------- UI ----------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: loading
-            ? const CircularProgressIndicator()
-            : ElevatedButton(
-                onPressed: signInWithGoogle,
-                child: const Text("Sign in with Google"),
-              ),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(labelText: "Email"),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: "Password"),
+                ),
+                const SizedBox(height: 20),
+
+                if (loading)
+                  const CircularProgressIndicator()
+                else ...[
+                  ElevatedButton(
+                    onPressed: emailAuth,
+                    child: Text(isLogin ? "Login" : "Register"),
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() => isLogin = !isLogin),
+                    child: Text(
+                      isLogin
+                          ? "Create new account"
+                          : "Already have an account?",
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: forgotPassword,
+                    child: const Text("Forgot Password?"),
+                  ),
+                  const Divider(),
+                  ElevatedButton(
+                    onPressed: signInWithGoogle,
+                    child: const Text("Sign in with Google"),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

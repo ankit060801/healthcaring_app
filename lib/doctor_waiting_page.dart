@@ -11,10 +11,7 @@ class DoctorWaitingPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Approval Pending"),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => logout(context),
-          ),
+          IconButton(icon: const Icon(Icons.logout), onPressed: () => logout()),
         ],
       ),
       body: const Center(
