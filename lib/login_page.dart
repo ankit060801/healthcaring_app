@@ -17,7 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   bool loading = false;
   bool isLogin = true; // login or register
 
-  // ---------------- GOOGLE LOGIN ----------------
+  // GOOGLE LOGIN
   Future<void> signInWithGoogle() async {
     try {
       setState(() => loading = true);
@@ -48,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // ---------------- EMAIL LOGIN / REGISTER ----------------
+  //  EMAIL LOGIN / REGISTER
   Future<void> emailAuth() async {
     try {
       setState(() => loading = true);
@@ -76,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // ---------------- CREATE FIRESTORE USER ----------------
+  // CREATE FIRESTORE USER
   Future<void> _createUserIfNotExists(User user) async {
     final ref = FirebaseFirestore.instance.collection('users').doc(user.uid);
     final doc = await ref.get();
@@ -93,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // ---------------- FORGOT PASSWORD ----------------
+  //  FORGOT PASSWORD
   Future<void> forgotPassword() async {
     if (emailController.text.isEmpty) {
       _showError("Enter email first");
@@ -113,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  // ---------------- UI ----------------
+  //  UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(

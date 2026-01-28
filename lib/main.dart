@@ -29,9 +29,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-///
-/// 🔐 CENTRAL AUTH + ROLE GATE
-///
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -40,35 +37,34 @@ class AuthGate extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, authSnap) {
-        // ⏳ Firebase auth loading
+        //  Firebase auth loading
         if (authSnap.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        // ❌ Not logged in
+        // Not logged in
         if (!authSnap.hasData) {
           return const LoginPage();
         }
-
         final String uid = authSnap.data!.uid;
 
-        // 🔥 Listen to Firestore user document
+        // Listen to Firestore user document
         return StreamBuilder<DocumentSnapshot>(
           stream: FirebaseFirestore.instance
               .collection('users')
               .doc(uid)
               .snapshots(),
           builder: (context, userSnap) {
-            // ⏳ Firestore loading
+            // Firestore loading
             if (userSnap.connectionState == ConnectionState.waiting) {
               return const Scaffold(
                 body: Center(child: CircularProgressIndicator()),
               );
             }
 
-            // ❌ User document missing (safety fallback)
+            // User document missing (safety fallback)
             if (!userSnap.hasData || !userSnap.data!.exists) {
               return const LoginPage();
             }
@@ -77,17 +73,17 @@ class AuthGate extends StatelessWidget {
 
             final String role = data['role'] ?? '';
 
-            // 🆕 First-time user → select role
+            // First-time user → select role
             if (role.isEmpty) {
               return const RolePage();
             }
 
-            // 🛠 Admin
+            // Admin
             if (role == 'admin') {
               return const AdminDashboard();
             }
 
-            // 👨‍⚕️ Doctor flow
+            // ️ Doctor flow
             if (role == 'doctor') {
               final bool approved = data['approved'] ?? false;
 
@@ -98,7 +94,7 @@ class AuthGate extends StatelessWidget {
               return const DoctorHome();
             }
 
-            // 🧑‍🦽 Patient (default)
+            //  Patient (default)
             return const PatientHome();
           },
         );

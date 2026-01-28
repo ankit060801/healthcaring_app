@@ -15,7 +15,7 @@ class PatientAppointmentsPage extends StatelessWidget {
         stream: FirebaseFirestore.instance
             .collection('appointments')
             .where('patientId', isEqualTo: patientId)
-            .orderBy('date', descending: true)
+            .orderBy('createdAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -23,12 +23,7 @@ class PatientAppointmentsPage extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text(
-                "No appointments found",
-                style: TextStyle(fontSize: 16),
-              ),
-            );
+            return const Center(child: Text("No appointments found"));
           }
 
           final appointments = snapshot.data!.docs;
@@ -38,45 +33,41 @@ class PatientAppointmentsPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final data = appointments[index].data() as Map<String, dynamic>;
 
-              final DateTime date = (data['date'] as Timestamp).toDate();
+              // SAFE FALLBACKS
+              final doctorName = data['doctorName'] ?? 'Doctor';
+              final status = data['status'] ?? 'pending';
+
+              final DateTime date = data['date'] != null
+                  ? (data['date'] as Timestamp).toDate()
+                  : DateTime.now();
 
               return Card(
                 margin: const EdgeInsets.all(10),
                 child: ListTile(
                   title: Text(
-                    data['doctorName'] ?? 'Doctor',
+                    doctorName,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
                     "Date: ${date.toLocal().toString().split(' ')[0]}",
                   ),
-                  trailing: _statusWidget(data['status']),
+                  trailing: Text(
+                    status.toUpperCase(),
+                    style: TextStyle(
+                      color: status == 'approved'
+                          ? Colors.green
+                          : status == 'rejected'
+                          ? Colors.red
+                          : Colors.orange,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               );
             },
           );
         },
       ),
-    );
-  }
-
-  Widget _statusWidget(String status) {
-    Color color;
-
-    switch (status) {
-      case 'approved':
-        color = Colors.green;
-        break;
-      case 'rejected':
-        color = Colors.red;
-        break;
-      default:
-        color = Colors.orange;
-    }
-
-    return Text(
-      status.toUpperCase(),
-      style: TextStyle(color: color, fontWeight: FontWeight.bold),
     );
   }
 }

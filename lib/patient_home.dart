@@ -14,7 +14,7 @@ class PatientHome extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Patient Dashboard"),
         actions: [
-          // 👤 PROFILE
+          // PROFILE
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
@@ -25,7 +25,7 @@ class PatientHome extends StatelessWidget {
             },
           ),
 
-          // 🚪 LOGOUT
+          // LOGOUT
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
@@ -41,7 +41,7 @@ class PatientHome extends StatelessWidget {
             const Text("Welcome Patient 🧑‍🦽", style: TextStyle(fontSize: 22)),
             const SizedBox(height: 30),
 
-            // 📅 BOOK APPOINTMENT
+            // BOOK APPOINTMENT
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -56,7 +56,7 @@ class PatientHome extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // 📜 APPOINTMENT HISTORY
+            //APPOINTMENT HISTORY
             ElevatedButton(
               onPressed: () {
                 Navigator.push(

@@ -13,7 +13,7 @@ class AdminDashboard extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Admin Dashboard"),
         actions: [
-          // 👤 PROFILE BUTTON
+          //  PROFILE BUTTON
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
@@ -24,7 +24,7 @@ class AdminDashboard extends StatelessWidget {
             },
           ),
 
-          // 🚪 LOGOUT BUTTON
+          // LOGOUT BUTTON
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {

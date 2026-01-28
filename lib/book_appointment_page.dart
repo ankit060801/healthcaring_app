@@ -15,12 +15,13 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
   DateTime? selectedDate;
   bool loading = false;
 
+  //PICK DATE
   Future<void> pickDate() async {
     final picked = await showDatePicker(
       context: context,
+      initialDate: DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 30)),
-      initialDate: DateTime.now(),
     );
 
     if (picked != null) {
@@ -28,6 +29,7 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
     }
   }
 
+  // BOOK APPOINTMENT
   Future<void> bookAppointment() async {
     if (selectedDoctorId == null || selectedDate == null) {
       ScaffoldMessenger.of(
@@ -39,26 +41,30 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
     setState(() => loading = true);
 
     final user = FirebaseAuth.instance.currentUser!;
-    final userDoc = await FirebaseFirestore.instance
+
+    // FETCH PATIENT NAME
+    final patientDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)
         .get();
 
+    final patientName = patientDoc.data()?['name'] ?? 'Patient';
+
     await FirebaseFirestore.instance.collection('appointments').add({
       'patientId': user.uid,
-      'patientName': userDoc['name'] ?? '',
+      'patientName': patientName,
       'doctorId': selectedDoctorId,
-      'doctorName': selectedDoctorName,
-      'date': selectedDate,
+      'doctorName': selectedDoctorName ?? 'Doctor',
+      'date': Timestamp.fromDate(selectedDate!),
       'status': 'pending',
       'createdAt': FieldValue.serverTimestamp(),
     });
 
     setState(() => loading = false);
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Appointment booked")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Appointment booked successfully")),
+    );
 
     Navigator.pop(context);
   }
@@ -71,7 +77,7 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // 👨‍⚕️ Doctor list
+            //  DOCTOR LIST
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('users')
@@ -83,9 +89,15 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
                   return const CircularProgressIndicator();
                 }
 
+                final docs = snapshot.data!.docs;
+
+                if (docs.isEmpty) {
+                  return const Text("No doctors available");
+                }
+
                 return DropdownButtonFormField<String>(
-                  hint: const Text("Select Doctor"),
-                  items: snapshot.data!.docs.map((doc) {
+                  decoration: const InputDecoration(labelText: "Select Doctor"),
+                  items: docs.map((doc) {
                     final data = doc.data() as Map<String, dynamic>;
                     return DropdownMenuItem(
                       value: doc.id,
@@ -93,8 +105,8 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
                     );
                   }).toList(),
                   onChanged: (value) {
-                    final doc = snapshot.data!.docs.firstWhere(
-                      (d) => d.id == value,
+                    final doc = docs.firstWhere(
+                      (element) => element.id == value,
                     );
                     setState(() {
                       selectedDoctorId = value;
@@ -108,7 +120,7 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
 
             const SizedBox(height: 16),
 
-            // 📅 Date picker
+            // DATE PICKER
             ElevatedButton(
               onPressed: pickDate,
               child: Text(

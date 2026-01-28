@@ -67,7 +67,7 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  // 👤 NAME
+                  //  NAME
                   TextField(
                     controller: nameController,
                     decoration: const InputDecoration(
@@ -77,7 +77,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 📧 EMAIL (READ ONLY)
+                  // EMAIL (READ ONLY)
                   TextField(
                     readOnly: true,
                     decoration: InputDecoration(
@@ -88,7 +88,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 🎭 ROLE (READ ONLY)
+                  // ROLE (READ ONLY)
                   StreamBuilder<DocumentSnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('users')

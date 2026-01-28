@@ -13,7 +13,7 @@ class DoctorHome extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Doctor Dashboard"),
         actions: [
-          // 👤 PROFILE BUTTON
+          // PROFILE BUTTON
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
@@ -35,7 +35,7 @@ class DoctorHome extends StatelessWidget {
             },
           ),
 
-          // 🚪 LOGOUT BUTTON
+          // LOGOUT BUTTON
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
@@ -45,7 +45,7 @@ class DoctorHome extends StatelessWidget {
         ],
       ),
       body: const Center(
-        child: Text("Welcome Doctor 👨‍⚕️", style: TextStyle(fontSize: 22)),
+        child: Text("Welcome Doctor ️", style: TextStyle(fontSize: 22)),
       ),
     );
   }
