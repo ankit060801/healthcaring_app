@@ -15,7 +15,7 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
   DateTime? selectedDate;
   bool loading = false;
 
-  //PICK DATE
+  // PICK DATE
   Future<void> pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -29,12 +29,12 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
     }
   }
 
-  // BOOK APPOINTMENT
+  //  BOOK APPOINTMENT
   Future<void> bookAppointment() async {
     if (selectedDoctorId == null || selectedDate == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Select doctor and date")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select doctor and date")),
+      );
       return;
     }
 
@@ -42,7 +42,7 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
 
     final user = FirebaseAuth.instance.currentUser!;
 
-    // FETCH PATIENT NAME
+    //  FETCH PATIENT NAME
     final patientDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)
@@ -50,6 +50,7 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
 
     final patientName = patientDoc.data()?['name'] ?? 'Patient';
 
+    //  CREATE APPOINTMENT
     await FirebaseFirestore.instance.collection('appointments').add({
       'patientId': user.uid,
       'patientName': patientName,
@@ -77,7 +78,7 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            //  DOCTOR LIST
+            // 👨‍⚕️ DOCTOR DROPDOWN
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('users')
@@ -85,21 +86,24 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
                   .where('approved', isEqualTo: true)
                   .snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Text("No doctors available");
                 }
 
                 final docs = snapshot.data!.docs;
 
-                if (docs.isEmpty) {
-                  return const Text("No doctors available");
-                }
-
                 return DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(labelText: "Select Doctor"),
+                  decoration: const InputDecoration(
+                    labelText: "Select Doctor",
+                    border: OutlineInputBorder(),
+                  ),
                   items: docs.map((doc) {
                     final data = doc.data() as Map<String, dynamic>;
-                    return DropdownMenuItem(
+                    return DropdownMenuItem<String>(
                       value: doc.id,
                       child: Text(data['name'] ?? 'Doctor'),
                     );
@@ -118,9 +122,9 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
               },
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-            // DATE PICKER
+            //  DATE PICKER
             ElevatedButton(
               onPressed: pickDate,
               child: Text(
@@ -130,13 +134,14 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 30),
 
+            //  CONFIRM BUTTON
             loading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
                     onPressed: bookAppointment,
-                    child: const Text("Book Appointment"),
+                    child: const Text("Confirm Appointment"),
                   ),
           ],
         ),

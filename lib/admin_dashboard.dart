@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'auth_service.dart';
-import 'profile_page.dart';
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -13,24 +12,7 @@ class AdminDashboard extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Admin Dashboard"),
         actions: [
-          //  PROFILE BUTTON
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ProfilePage()),
-              );
-            },
-          ),
-
-          // LOGOUT BUTTON
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await logout();
-            },
-          ),
+          IconButton(icon: const Icon(Icons.logout), onPressed: () => logout()),
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -56,7 +38,7 @@ class AdminDashboard extends StatelessWidget {
               final approved = data['approved'] ?? false;
 
               return Card(
-                margin: const EdgeInsets.all(8),
+                margin: const EdgeInsets.all(10),
                 child: ListTile(
                   title: Text(data['name'] ?? 'No Name'),
                   subtitle: Text(data['email'] ?? ''),

@@ -21,10 +21,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(useMaterial3: true),
-      home: const AuthGate(),
+      home: AuthGate(),
     );
   }
 }
@@ -34,56 +33,56 @@ class AuthGate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //  Listen ONLY to authentication state
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, authSnap) {
-        //  Firebase auth loading
+        //  Auth loading
         if (authSnap.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        // Not logged in
+        //  Not logged in
         if (!authSnap.hasData) {
           return const LoginPage();
         }
+
         final String uid = authSnap.data!.uid;
 
-        // Listen to Firestore user document
-        return StreamBuilder<DocumentSnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('users')
-              .doc(uid)
-              .snapshots(),
+        //  One-time Firestore fetch (NO stream → NO flicker)
+        return FutureBuilder<DocumentSnapshot>(
+          future: FirebaseFirestore.instance.collection('users').doc(uid).get(),
           builder: (context, userSnap) {
-            // Firestore loading
+            //  Firestore loading
             if (userSnap.connectionState == ConnectionState.waiting) {
               return const Scaffold(
                 body: Center(child: CircularProgressIndicator()),
               );
             }
 
-            // User document missing (safety fallback)
+            //  Safety fallback
             if (!userSnap.hasData || !userSnap.data!.exists) {
               return const LoginPage();
             }
 
-            final data = userSnap.data!.data() as Map<String, dynamic>;
+            final Map<String, dynamic> data =
+                userSnap.data!.data() as Map<String, dynamic>;
 
-            final String role = data['role'] ?? '';
+            final String role = (data['role'] ?? '').toString().trim();
 
-            // First-time user → select role
+            //  FIRST LOGIN → ROLE DASHBOARD
             if (role.isEmpty) {
               return const RolePage();
             }
 
-            // Admin
+            //  ADMIN
             if (role == 'admin') {
               return const AdminDashboard();
             }
 
-            // ️ Doctor flow
+            //  DOCTOR (needs approval)
             if (role == 'doctor') {
               final bool approved = data['approved'] ?? false;
 
@@ -94,7 +93,7 @@ class AuthGate extends StatelessWidget {
               return const DoctorHome();
             }
 
-            //  Patient (default)
+            //  PATIENT (default)
             return const PatientHome();
           },
         );

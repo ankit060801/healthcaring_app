@@ -16,54 +16,27 @@ class DoctorAppointmentsPage extends StatelessWidget {
             .collection('appointments')
             .where('doctorId', isEqualTo: doctorId)
             .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+        builder: (context, snap) {
+          if (snap.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final docs = snapshot.data!.docs;
-
-          if (docs.isEmpty) {
+          if (!snap.hasData || snap.data!.docs.isEmpty) {
             return const Center(child: Text("No appointments"));
           }
 
-          return ListView.builder(
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final doc = docs[index];
+          return ListView(
+            children: snap.data!.docs.map((doc) {
               final data = doc.data() as Map<String, dynamic>;
-
-              return Card(
-                child: ListTile(
-                  title: Text(data['patientName'] ?? ''),
-                  subtitle: Text(
-                    "Date: ${data['date'].toDate().toString().split(' ')[0]}",
-                  ),
-                  trailing: data['status'] == 'pending'
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.check,
-                                color: Colors.green,
-                              ),
-                              onPressed: () {
-                                doc.reference.update({'status': 'approved'});
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close, color: Colors.red),
-                              onPressed: () {
-                                doc.reference.update({'status': 'rejected'});
-                              },
-                            ),
-                          ],
-                        )
-                      : Text(data['status']),
+              return ListTile(
+                title: Text(data['patientName']),
+                subtitle: Text(data['status']),
+                trailing: IconButton(
+                  icon: const Icon(Icons.check),
+                  onPressed: () => doc.reference.update({'status': 'approved'}),
                 ),
               );
-            },
+            }).toList(),
           );
         },
       ),

@@ -15,14 +15,19 @@ class _LoginPageState extends State<LoginPage> {
   final passwordController = TextEditingController();
 
   bool loading = false;
-  bool isLogin = true; // login or register
+  bool isLogin = true; // toggle login / register
 
-  // GOOGLE LOGIN
+  // 🔹 GOOGLE SIGN-IN (FORCE ACCOUNT CHOOSER EVERY TIME)
   Future<void> signInWithGoogle() async {
     try {
       setState(() => loading = true);
 
-      final googleUser = await GoogleSignIn().signIn();
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+
+      // FORCE ACCOUNT CHOOSER
+      await googleSignIn.signOut();
+
+      final googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
         setState(() => loading = false);
         return;
@@ -40,15 +45,14 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       await _createUserIfNotExists(userCred.user!);
-
-      setState(() => loading = false);
     } catch (e) {
-      setState(() => loading = false);
       _showError(e.toString());
+    } finally {
+      setState(() => loading = false);
     }
   }
 
-  //  EMAIL LOGIN / REGISTER
+  // 🔹 EMAIL LOGIN / REGISTER
   Future<void> emailAuth() async {
     try {
       setState(() => loading = true);
@@ -68,17 +72,17 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       await _createUserIfNotExists(userCred.user!);
-
-      setState(() => loading = false);
     } catch (e) {
-      setState(() => loading = false);
       _showError(e.toString());
+    } finally {
+      setState(() => loading = false);
     }
   }
 
-  // CREATE FIRESTORE USER
+  // 🔹 CREATE FIRESTORE USER (ONLY FIRST TIME)
   Future<void> _createUserIfNotExists(User user) async {
     final ref = FirebaseFirestore.instance.collection('users').doc(user.uid);
+
     final doc = await ref.get();
 
     if (!doc.exists) {
@@ -86,17 +90,17 @@ class _LoginPageState extends State<LoginPage> {
         'uid': user.uid,
         'email': user.email,
         'name': user.displayName ?? '',
-        'role': '',
+        'role': '', // 🔑 EMPTY → ROLE PAGE WILL OPEN
         'approved': false,
-        'provider': user.providerData.first.providerId,
+        'createdAt': FieldValue.serverTimestamp(),
       });
     }
   }
 
-  //  FORGOT PASSWORD
+  // 🔹 FORGOT PASSWORD
   Future<void> forgotPassword() async {
     if (emailController.text.isEmpty) {
-      _showError("Enter email first");
+      _showError("Please enter your email first");
       return;
     }
 
@@ -113,7 +117,7 @@ class _LoginPageState extends State<LoginPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  //  UI
+  // 🔹 UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,13 +129,19 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 TextField(
                   controller: emailController,
-                  decoration: const InputDecoration(labelText: "Email"),
+                  decoration: const InputDecoration(
+                    labelText: "Email",
+                    border: OutlineInputBorder(),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: passwordController,
                   obscureText: true,
-                  decoration: const InputDecoration(labelText: "Password"),
+                  decoration: const InputDecoration(
+                    labelText: "Password",
+                    border: OutlineInputBorder(),
+                  ),
                 ),
                 const SizedBox(height: 20),
 
@@ -142,6 +152,7 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: emailAuth,
                     child: Text(isLogin ? "Login" : "Register"),
                   ),
+
                   TextButton(
                     onPressed: () => setState(() => isLogin = !isLogin),
                     child: Text(
@@ -150,11 +161,14 @@ class _LoginPageState extends State<LoginPage> {
                           : "Already have an account?",
                     ),
                   ),
+
                   TextButton(
                     onPressed: forgotPassword,
                     child: const Text("Forgot Password?"),
                   ),
-                  const Divider(),
+
+                  const Divider(height: 40),
+
                   ElevatedButton(
                     onPressed: signInWithGoogle,
                     child: const Text("Sign in with Google"),

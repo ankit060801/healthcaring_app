@@ -13,39 +13,24 @@ class DoctorHome extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Doctor Dashboard"),
         actions: [
-          // PROFILE BUTTON
           IconButton(
             icon: const Icon(Icons.person),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ProfilePage()),
-              );
-            },
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfilePage()),
+            ),
           ),
-          ElevatedButton(
-            child: const Text("View Appointments"),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const DoctorAppointmentsPage(),
-                ),
-              );
-            },
-          ),
-
-          // LOGOUT BUTTON
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await logout();
-            },
-          ),
+          IconButton(icon: const Icon(Icons.logout), onPressed: logout),
         ],
       ),
-      body: const Center(
-        child: Text("Welcome Doctor ️", style: TextStyle(fontSize: 22)),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const DoctorAppointmentsPage()),
+          ),
+          child: const Text("View Appointments"),
+        ),
       ),
     );
   }

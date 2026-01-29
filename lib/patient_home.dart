@@ -14,62 +14,36 @@ class PatientHome extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Patient Dashboard"),
         actions: [
-          // PROFILE
           IconButton(
             icon: const Icon(Icons.person),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ProfilePage()),
-              );
-            },
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfilePage()),
+            ),
           ),
-
-          // LOGOUT
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await logout();
-            },
-          ),
+          IconButton(icon: const Icon(Icons.logout), onPressed: logout),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const Text("Welcome Patient 🧑‍🦽", style: TextStyle(fontSize: 22)),
-            const SizedBox(height: 30),
-
-            // BOOK APPOINTMENT
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const BookAppointmentPage(),
-                  ),
-                );
-              },
-              child: const Text("Book Appointment"),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const BookAppointmentPage()),
             ),
-
-            const SizedBox(height: 16),
-
-            //APPOINTMENT HISTORY
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const PatientAppointmentsPage(),
-                  ),
-                );
-              },
-              child: const Text("My Appointments"),
+            child: const Text("Book Appointment"),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const PatientAppointmentsPage(),
+              ),
             ),
-          ],
-        ),
+            child: const Text("My Appointments"),
+          ),
+        ],
       ),
     );
   }
